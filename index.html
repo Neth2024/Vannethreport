@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nol Vanneth Sales</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:light dark}*{box-sizing:border-box}body{margin:0;background:var(--tg-theme-bg-color,#f5f5f5);color:var(--tg-theme-text-color,#111);padding-bottom:28px}.app{max-width:720px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.brand{font-size:22px;font-weight:800}.badge{padding:6px 10px;border-radius:999px;background:#eee}.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card{background:var(--tg-theme-secondary-bg-color,#fff);padding:15px;border-radius:16px}.num{font-size:25px;font-weight:800}.muted{opacity:.65;font-size:13px}.panel{margin-top:12px;background:var(--tg-theme-secondary-bg-color,#fff);padding:16px;border-radius:16px}.row{display:flex;gap:8px}.row>*{flex:1}button,input,select{width:100%;padding:12px;border:0;border-radius:12px;font:inherit}button{background:#2481cc;color:white;font-weight:700}input,select{background:var(--tg-theme-bg-color,#f5f5f5);color:inherit;margin-bottom:9px}.products{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.product{border:1px solid #ddd;background:transparent;color:inherit}.product.active{background:#2481cc;color:#fff;border-color:#2481cc}.premium{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff}.hidden{display:none}.status{margin-top:10px;font-size:13px}</style>
+</head>
+<body><main class="app">
+<div class="top"><div><div class="brand">Nol Vanneth Sales</div><div class="muted">Telegram Mini App</div></div><div id="plan" class="badge">FREE</div></div>
+<section class="cards"><div class="card"><div class="muted">ថ្ងៃនេះ</div><div id="today" class="num">0</div><div class="muted">បេ</div></div><div class="card"><div class="muted">តោន</div><div id="tons" class="num">0.000</div></div></section>
+<section class="panel"><h3>📝 កត់ត្រាការលក់</h3><div class="products"><button class="product active" data-kg="20">20 Kg</button><button class="product" data-kg="25">25 Kg</button><button class="product" data-kg="30">30 Kg</button><button class="product" data-kg="2">2 Kg</button></div><input id="qty" type="number" min="1" max="10000" value="1" placeholder="ចំនួនបេ"><button id="save">💾 រក្សាទុក</button><div id="status" class="status"></div></section>
+<section class="panel"><h3>📊 Report</h3><div class="row"><button id="daily">ថ្ងៃនេះ</button><button id="monthly">ខែនេះ</button></div><div id="report" class="status"></div></section>
+<section class="panel premium"><h3>⭐ Premium</h3><p>Unlock Dashboard, Stock និង Monthly Reports.</p><button id="buy">⭐ Upgrade with Telegram Stars</button><div id="payment" class="status"></div></section>
+</main>
+<script>
+const tg=window.Telegram?.WebApp; if(tg){tg.ready();tg.expand()}
+let kg=20; let sales=JSON.parse(localStorage.getItem('sales')||'[]');
+const $=id=>document.getElementById(id); document.querySelectorAll('.product').forEach(b=>b.onclick=()=>{document.querySelectorAll('.product').forEach(x=>x.classList.remove('active'));b.classList.add('active');kg=+b.dataset.kg});
+function render(){let d=new Date().toISOString().slice(0,10),a=sales.filter(x=>x.date===d),bags=a.reduce((s,x)=>s+x.qty,0),tons=a.reduce((s,x)=>s+x.qty*x.kg/1000,0);$('today').textContent=bags.toLocaleString();$('tons').textContent=tons.toFixed(3)}
+$('save').onclick=()=>{let qty=Math.max(1,Math.min(10000,+$('qty').value||1));let item={date:new Date().toISOString().slice(0,10),time:new Date().toISOString(),kg,qty};sales.push(item);localStorage.setItem('sales',JSON.stringify(sales));$('status').textContent='✅ បានរក្សាទុក';render()};
+$('daily').onclick=()=>{let d=new Date().toISOString().slice(0,10),a=sales.filter(x=>x.date===d);$('report').textContent=`${a.reduce((s,x)=>s+x.qty,0)} បេ • ${a.reduce((s,x)=>s+x.qty*x.kg/1000,0).toFixed(3)} តោន`};
+$('monthly').onclick=()=>{let m=new Date().toISOString().slice(0,7),a=sales.filter(x=>x.date.startsWith(m));$('report').textContent=`${a.reduce((s,x)=>s+x.qty,0)} បេ • ${a.reduce((s,x)=>s+x.qty*x.kg/1000,0).toFixed(3)} តោន`};
+$('buy').onclick=async()=>{if(!tg){$('payment').textContent='បើក Mini App ក្នុង Telegram ដើម្បីបង់ Stars';return} $('payment').textContent='⏳ កំពុងរៀបចំការទូទាត់...'; try{let r=await fetch('/api/create-invoice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tg.initData,plan:'pro'})});let j=await r.json();if(j.invoiceLink)tg.openInvoice(j.invoiceLink,s=>{$('payment').textContent=s==='paid'?'✅ Premium បានបើក':'❌ មិនទាន់បង់'});else $('payment').textContent=j.error||'Payment error'}catch(e){$('payment').textContent='⚠️ Server មិនទាន់ភ្ជាប់'}};
+render();
+</script></body></html>
